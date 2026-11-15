@@ -1,3 +1,211 @@
+///// MEMBER 1 
+
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+#include <optional>
+#include <string>
+#include <array>
+#include <map>
+#include <sstream>
+
+using namespace std;
+
+const unsigned W = 1200;
+const unsigned H = 760;
+
+// Different screens of the game
+enum Screen { Menu, Settings, HowToPlay, Game, RiddleScreen, Notebook };
+
+struct Button {
+    sf::FloatRect rect;
+    string label;
+};
+
+struct RiddleData {
+    string object, question, answer, hint1, hint2, image;
+};
+
+// Game variables
+Screen screen = Menu;
+Screen returnAfterNotebook = Game;
+int currentRoom = 0;
+int ghostRoom = 0;
+int selectedChoice = -1;
+int score = 0;
+
+array<bool, 2> clueCollected{ false, false };  // 2 rooms hein abhi 
+
+string notebook = "";
+string statusMessage = "Explore the room. Choose one object to investigate.";
+
+map<string, sf::Texture> textures;
+sf::Font font;
+sf::Music horrorMusic;
+
+float musicVolume = 35.f;
+bool soundEnabled = true;
+
+const array<string, 2> roomNames{ "The Bedroom", "The Library" };
+const array<int, 2> roomCodes{ 2, 4 }; // answer of room 1 and room 2 
+
+// Functions used in game
+void drawMenu(sf::RenderWindow& window);
+void drawSettings(sf::RenderWindow& window);
+void drawHowToPlay(sf::RenderWindow& window);
+void drawGame(sf::RenderWindow& window);
+void drawRiddle(sf::RenderWindow& window);
+void drawNotebook(sf::RenderWindow& window);
+void handleClick(sf::RenderWindow& win, sf::Vector2f p);
+
+// Loads an image and saves it for later use
+bool loadTexture(const string& key, const string& path) {
+    sf::Texture tex;
+    if (!tex.loadFromFile(path)) return false;
+    textures.insert_or_assign(key, move(tex));
+    return true;
+}
+
+// Displays an image at the given position and size
+void drawImage(sf::RenderWindow& win, const string& key,
+    float x, float y, float w, float h) {
+
+    auto it = textures.find(key);
+    if (it == textures.end()) return;
+
+    sf::Sprite sprite(it->second);
+    const auto sz = it->second.getSize();
+
+    sprite.setPosition({ x, y });
+    sprite.setScale({
+        w / static_cast<float>(sz.x),
+        h / static_cast<float>(sz.y)
+        });
+
+    win.draw(sprite);
+}
+
+// Draws a panel on the screen
+void drawPanel(sf::RenderWindow& win, float x, float y,
+    float w, float h,
+    // blue color     transparency
+    sf::Color color = sf::Color(5, 10, 22, 225)) {
+
+    sf::RectangleShape panel({ w, h });
+    panel.setPosition({ x, y });
+    panel.setFillColor(color);
+    panel.setOutlineColor(sf::Color(190, 139, 62, 230));
+    panel.setOutlineThickness(1.5f);
+
+    win.draw(panel);
+}
+
+// Displays text on the screen
+void drawText(sf::RenderWindow& win, const string& s,
+    float x, float y, unsigned size = 20,
+    sf::Color color = sf::Color(240, 235, 220)) {
+
+    sf::Text t(font, s, size);
+    t.setFillColor(color);
+    t.setPosition({ x, y });
+
+    win.draw(t);
+}
+
+// Draws a button with its label
+void drawButton(sf::RenderWindow& win, const Button& b,
+    bool selected = false) {
+
+    sf::RectangleShape shape({ b.rect.size.x, b.rect.size.y });
+    shape.setPosition(b.rect.position);
+
+    // condition ? if true then do etc : if false then do etc
+    shape.setFillColor(selected
+        ? sf::Color(94, 54, 34, 245)
+        : sf::Color(7, 17, 32, 238));
+
+    shape.setOutlineColor(selected
+        ? sf::Color(255, 203, 103)
+        : sf::Color(126, 153, 179));
+
+    shape.setOutlineThickness(selected ? 2.5f : 1.3f);
+
+    win.draw(shape);
+
+    drawText(win, b.label,
+        b.rect.position.x + 12,
+        b.rect.position.y + 12, 18);
+}
+
+// Checks whether the mouse is inside a button or area
+bool hit(const sf::Vector2f& p, const sf::FloatRect& r) {
+    return r.contains(p);
+}
+
+// Breaks long text into smaller lines
+void drawWrappedApprox(sf::RenderWindow& win, const string& text,
+    float x, float y, unsigned size, unsigned maxChars,
+    sf::Color color = sf::Color(240, 235, 220)) {
+
+    stringstream input(text);
+    string word;
+    string line = "";
+    float currentY = y;
+
+    while (input >> word) {
+        if (line.length() + word.length() + 1 > maxChars && line != "") {
+            drawText(win, line, x, currentY, size, color);
+            currentY = currentY + size + 7;
+            line = "";
+        }
+
+        if (line != "") line = line + " ";
+        line = line + word;
+    }
+
+    if (line != "") drawText(win, line, x, currentY, size, color);
+}
+
+// Returns the riddle selected by the player
+RiddleData getCurrentRiddle() {
+    RiddleData r;
+    r.answer = "2";
+
+    if (selectedChoice == 0) {
+        r.object = "The Hidden Number ";
+        r.image = "clock.png";
+        r.question = "I am the only even number that is also prime. Which number am I?";
+        r.hint1 = "Think of the smallest prime number.";
+    }
+    else if (selectedChoice == 1) {
+        r.object = "The Old Inscription ";
+        r.image = "bookshelf.png";
+        r.question = "Two footsteps enter the hall. What number represents a pair?";
+        r.hint1 = "Count the footsteps.";
+    }
+    else {
+        r.object = "The Cipher Calculation ";
+        r.image = "globe.png";
+        r.question = "Solve the cipher: (7 x 2) - 12 = ?";
+        r.hint1 = "Multiply 7 by 2 first.";
+    }
+
+    return r;
+}
+
+// Resets the game when a new game starts
+void resetGame() {
+    currentRoom = 0;
+    selectedChoice = -1;
+    score = 0;
+    clueCollected = { false, false };
+    notebook.clear();
+
+    statusMessage = "Explore the room. Choose one object to investigate.";
+    screen = Game;
+}
+
+
+
 ///// MEMBER 2 - Game Screens
 
 void drawMenu(sf::RenderWindow& window) {
