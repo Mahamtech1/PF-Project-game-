@@ -165,28 +165,51 @@ void drawWrappedApprox(sf::RenderWindow& win, const string& text,
     if (line != "") drawText(win, line, x, currentY, size, color);
 }
 
-// Returns the riddle selected by the player
+// Returns the riddle selected by the player based on the current room
 RiddleData getCurrentRiddle() {
     RiddleData r;
-    r.answer = "2";
 
-    if (selectedChoice == 0) {
-        r.object = "The Hidden Number ";
-        r.image = "clock.png";
-        r.question = "I am the only even number that is also prime. Which number am I?";
-        r.hint1 = "Think of the smallest prime number.";
+    // Room 1 Riddles
+    if (currentRoom == 0) {
+        if (selectedChoice == 0) {
+            r.object = "The Hidden Number";
+            r.image = "clock.png";
+            r.question = "I am the only even number that is also prime. Which number am I?";
+            r.answer = "2";
+        }
+        else if (selectedChoice == 1) {
+            r.object = "The mystery";
+            r.image = "bookshelf.png";
+            r.question = "If a phantom loses one of its boots, how many feet does it still have left to walk?";
+            r.answer = "2";
+        }
+        else {
+            r.object = "Calculation";
+            r.image = "globe.png";
+            r.question = "Solve the cursed sum: \n (7 x 3) - 19 = ?";
+            r.answer = "2";
+        }
     }
-    else if (selectedChoice == 1) {
-        r.object = "The Old Inscription ";
-        r.image = "bookshelf.png";
-        r.question = "Two footsteps enter the hall. What number represents a pair?";
-        r.hint1 = "Count the footsteps.";
-    }
+    // Room 2 Riddles (New 3 Riddles for Room 2)
     else {
-        r.object = "The Cipher Calculation ";
-        r.image = "globe.png";
-        r.question = "Solve the cipher: (7 x 2) - 12 = ?";
-        r.hint1 = "Multiply 7 by 2 first.";
+        if (selectedChoice == 0) {
+            r.object = "The Grand Clock";
+            r.image = "clock.png";
+            r.question = "How many spooky corners are there in a haunted square room";
+            r.answer = "4";
+        }
+        else if (selectedChoice == 1) {
+            r.object = "The Dusty Mirror";
+            r.image = "bookshelf.png";
+            r.question = "How many wooden legs does the haunted table standing in the middle of the dark room have?";
+            r.answer = "4";
+        }
+        else {
+            r.object = "The numeric nightmare";
+            r.image = "globe.png";
+            r.question = "Solve the cursed sum :\n 10 - (3 x 2) = ?";;
+            r.answer = "4";
+        }
     }
 
     return r;
@@ -268,7 +291,7 @@ void drawHowToPlay(sf::RenderWindow& window) {
 
     drawPanel(window, 220, 100, 760, 560, sf::Color(4, 9, 20, 245));
 
-    drawText(window, "READ BEFORE YOU EMBARRASS YOURSELF", 440, 130, 27,
+    drawText(window, "READ BEFORE YOU EMBARRASS YOURSELF", 310, 130, 27,
         sf::Color(255, 203, 111));
 
     drawText(window,
@@ -418,8 +441,10 @@ void drawNotebook(sf::RenderWindow& window) {
 
     // Displays the notes written by the player
     drawText(window,
-        "MY NOTES \n Space Bar: 1 word space \n Enter : move to next line",
+        "MY NOTES",
         650, 165, 20, sf::Color(74, 45, 27));
+
+        drawText(window, "\n Space Bar: 1 word space \n\n Enter : move to next line", 670, 185, 12, sf::Color(74, 45, 27));
 
     float y = 230.f;
     string line = "";
