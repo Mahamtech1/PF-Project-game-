@@ -452,7 +452,230 @@ void drawNotebook(sf::RenderWindow& window) {
         }, true);
 }
 
+// Member 3
 
+void handleClick(sf::RenderWindow& win, sf::Vector2f p) {
+
+    if (screen == Menu) {
+        if (hit(p, { {160, 380}, {410, 78} }))
+            resetGame();
+
+        else if (hit(p, { {160, 475}, {410, 72} }))
+            screen = Settings;
+
+        else if (hit(p, { {160, 565}, {410, 72} }))
+            screen = HowToPlay;
+
+        else if (hit(p, { {160, 650}, {410, 72} }))
+            win.close();
+
+        return;
+    }
+
+    if (screen == Settings) {
+        if (hit(p, { {360, 350}, {170, 58} })) {
+            soundEnabled = !soundEnabled;
+            horrorMusic.setVolume(soundEnabled ? musicVolume : 0.f);
+        }
+        else if (hit(p, { {440, 650}, {320, 58} }))
+            screen = Menu;
+
+        return;
+    }
+
+    if (screen == HowToPlay) {
+        if (hit(p, { {440, 650}, {320, 58} }))
+            screen = Menu;
+
+        return;
+    }
+
+    if (screen == Game) {
+
+        if (hit(p, { {750, 16}, {190, 46} })) {
+            returnAfterNotebook = Game;
+            screen = Notebook;
+            return;
+        }
+
+        if (!clueCollected[currentRoom]) {
+            for (int i = 0; i < 3; ++i) {
+                sf::FloatRect r(
+                    { 52.f + i * 370.f, 500.f },
+                    { 340.f, 170.f }
+                );
+
+                if (hit(p, r)) {
+                    selectedChoice = i;
+                    screen = RiddleScreen;
+                    return;
+                }
+            }
+        }
+        else if (hit(p, { {430, 690}, {340, 48} })) {
+
+            if (currentRoom < 1) {
+                ++currentRoom;
+                selectedChoice = -1;
+            }
+            else {
+                screen = Menu;
+            }
+        }
+
+        return;
+    }
+
+    if (screen == RiddleScreen) {
+
+        if (hit(p, { {1040, 650}, {120, 48} })) {
+            screen = Game;
+            return;
+        }
+
+        if (hit(p, { {780, 565}, {220, 54} })) {
+            clueCollected[currentRoom] = true;
+            screen = Game;
+            return;
+        }
+
+        return;
+    }
+
+    if (screen == Notebook) {
+        if (hit(p, { {1000, 25}, {155, 48} }))
+            screen = returnAfterNotebook;
+
+        return;
+    }
+}
+
+// Draws whichever screen is currently open
+void drawCurrentScreen(sf::RenderWindow& window) {
+    window.clear(sf::Color(3, 8, 18));
+
+    switch (screen) {
+    case Menu:
+        drawMenu(window);
+        break;
+
+    case Settings:
+        drawSettings(window);
+        break;
+
+    case HowToPlay:
+        drawHowToPlay(window);
+        break;
+
+    case Game:
+        drawGame(window);
+        break;
+
+    case RiddleScreen:
+        drawRiddle(window);
+        break;
+
+    case Notebook:
+        drawNotebook(window);
+        break;
+    }
+
+    window.display();
+}
+
+// Checks mouse and keyboard events
+void processEvents(sf::RenderWindow& window) {
+    while (true) {
+        optional<sf::Event> event = window.pollEvent();
+
+        if (!event.has_value()) break;
+
+        if (event->is<sf::Event::Closed>())
+            window.close();
+
+        if (const auto* mouse =
+            event->getIf<sf::Event::MouseButtonPressed>()) {
+
+            if (mouse->button == sf::Mouse::Button::Left) {
+                handleClick(window,
+                    window.mapPixelToCoords(mouse->position));
+            }
+        }
+
+        // Handles typing inside the notebook
+        if (screen == Notebook) {
+
+            if (const auto* key =
+                event->getIf<sf::Event::KeyPressed>()) {
+
+                if (key->code == sf::Keyboard::Key::Backspace
+                    && !notebook.empty()) {
+                    notebook.pop_back();
+                }
+            }
+
+            if (const auto* textEvent =
+                event->getIf<sf::Event::TextEntered>()) {
+
+                if (textEvent->unicode >= 32 &&
+                    textEvent->unicode < 127) {
+
+                    if (notebook.size() < 400)
+                        notebook += static_cast<char>(textEvent->unicode);
+                }
+                else if (textEvent->unicode == '\r' ||
+                    textEvent->unicode == '\n') {
+
+                    if (notebook.size() < 400)
+                        notebook += '\n';
+                }
+            }
+        }
+    }
+}
+
+// Starts the game
+int main() {
+    sf::RenderWindow window(
+        sf::VideoMode({ W, H }),
+        "The Hunt Of the Cursed Phantom"
+    );
+
+    window.setFramerateLimit(60);
+
+    // Loads the font
+    if (!font.openFromFile("C:/Windows/Fonts/georgia.ttf")) {
+        if (!font.openFromFile("C:/Windows/Fonts/arial.ttf"))
+            return 1;
+    }
+
+    // Loads all game images
+    loadTexture("menu", "assets/menu.jpg");
+    loadTexture("concept_settings", "assets/concept_settings.jpg");
+    loadTexture("concept_intro", "assets/concept_intro.jpg");
+    loadTexture("concept_riddle", "assets/concept_riddle.jpg");
+    loadTexture("notebook_art", "assets/notebook_blank.png");
+    loadTexture("room1", "assets/room1_bg.jpg");
+    loadTexture("room2", "assets/room2_bg.jpg");
+    loadTexture("clock.png", "assets/clock.png");
+    loadTexture("bookshelf.png", "assets/bookshelf.png");
+    loadTexture("globe.png", "assets/globe.png");
+
+    // Starts the background music
+    if (horrorMusic.openFromFile("assets/horror_ambience.wav")) {
+        horrorMusic.setLooping(true);
+        horrorMusic.setVolume(musicVolume);
+        horrorMusic.play();
+    }
+
+    // Keeps the game running until the window is closed
+    while (window.isOpen()) {
+        processEvents(window);
+        drawCurrentScreen(window);
+    }
+
+    return 0;
+}
 
 
 
