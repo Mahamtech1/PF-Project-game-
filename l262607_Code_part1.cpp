@@ -516,7 +516,7 @@ void drawNotebook(sf::RenderWindow& window) {
             sf::Color(42, 31, 24));
 
     drawButton(window, {
-        {{1000, 25}, {155, 48}}, "CLOSE NOTEBOOK"
+        {{1000, 30}, {185, 48}}, "CLOSE NOTEBOOK"
         }, true);
 }
 
