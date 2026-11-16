@@ -158,7 +158,8 @@ void drawWrappedApprox(sf::RenderWindow& win, const string& text,
             line = "";
         }
 
-        if (line != "") line = line + " ";
+        if (line != "")
+        {line = line + " ";}
         line = line + word;
     }
 
@@ -191,11 +192,11 @@ RiddleData getCurrentRiddle() {
         }
     }
     // Room 2 Riddles (New 3 Riddles for Room 2)
-    else {
+    else if(currentRoom == 1) {
         if (selectedChoice == 0) {
             r.object = "The Grand Clock";
             r.image = "clock.png";
-            r.question = "How many spooky corners are there in a haunted square room";
+            r.question = "How many spooky corners are there in a haunted square room?";
             r.answer = "4";
         }
         else if (selectedChoice == 1) {
@@ -209,6 +210,48 @@ RiddleData getCurrentRiddle() {
             r.image = "globe.png";
             r.question = "Solve the cursed sum :\n 10 - (3 x 2) = ?";;
             r.answer = "4";
+        }
+    }
+    // Room 3 Riddles (New 3 Riddles for Room 3)
+    else if (currentRoom == 2) {
+        if (selectedChoice == 0) {
+            r.object = "The Cold Fire";
+            r.image = "fireplace.png";
+            r.question = "Five doors are locked, but the ghost unlocks just one. How many escape routes are open?";
+            r.answer = "1";
+        }
+        else if (selectedChoice == 1) {
+            r.object = "The Broken Vase";
+            r.image = "vase.png";
+            r.question = "A dark room has only one flickering candle burning. How many flames are left in the dark?";
+            r.answer = "1";
+        }
+        else {
+            r.object = "The Numeric Nightmare";
+            r.image = "window.png";
+            r.question = "Solve the cursed sum :\n (18 / 3) - 5 = ?";;
+            r.answer = "1";
+        }
+    }
+    // Room 4 Riddles (New 3 Riddles for Room 4)
+    else {
+        if (selectedChoice == 0) {
+            r.object = "The Cold Fire";
+            r.image = "fireplace.png";
+            r.question = "A cursed music box plays its haunting melody in three broken notes before falling dead silent. How many notes echo through the dark room?";
+            r.answer = "3";
+        }
+        else if (selectedChoice == 1) {
+            r.object = "The Dusty Window";
+            r.image = "window.png";
+            r.question = "Count the eyes of the beast carved in bone: one weeps blood, one sheds ash, and the third sees only your death. How many total gazes are fixed on you?";
+            r.answer = "3";
+        }
+        else {
+            r.object = "The Numeric Nightmare";
+            r.image = "vase.png";
+            r.question = "Solve the cursed sum :\n 7 - ((14 x 2) / 7) = ?";;
+            r.answer = "3";
         }
     }
 
@@ -295,7 +338,7 @@ void drawHowToPlay(sf::RenderWindow& window) {
         sf::Color(255, 203, 111));
 
     drawText(window,
-        "1. Choose one of the 3 objects in each room and solve the puzzle.\n\n 2.You can write anything in notebook.",
+        "1. Choose one of the 3 objects in each room and solve the puzzle.\n\n 2. The answer of puzzle will be a numerical number ranging from 1 to 4. \n\n 3.You can write anything in notebook.",
         285, 220, 20, sf::Color(240, 235, 220));
 
     drawButton(window, {
