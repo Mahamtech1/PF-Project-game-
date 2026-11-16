@@ -489,7 +489,7 @@ void drawNotebook(sf::RenderWindow& window) {
 
         drawText(window, "\n Space Bar: 1 word space \n\n Enter : move to next line", 670, 185, 12, sf::Color(74, 45, 27));
 
-    float y = 230.f;
+    float y = 257.f;
     string line = "";
     unsigned chars = 0;
 
