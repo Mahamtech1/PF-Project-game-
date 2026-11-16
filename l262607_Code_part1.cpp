@@ -441,7 +441,7 @@ void drawRiddle(sf::RenderWindow& window) {
     drawWrappedApprox(window, r.question, 295, 350, 22, 49);
 
     drawButton(window, {
-        {{650,565},{480,54}}, "Clue mil gaya,MIRACLE...MIRACLE"
+        {{610,565},{320,54}}, "Clue mil gaya,MIRACLE...MIRACLE"
         }, true);
 
     drawButton(window, {
