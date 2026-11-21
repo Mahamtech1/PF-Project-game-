@@ -6,6 +6,8 @@
 #include <string>
 #include <array>
 #include <map>
+#include <algorithm>
+#include <random>
 #include <sstream>
 
 using namespace std;
@@ -14,7 +16,7 @@ const unsigned W = 1200;
 const unsigned H = 760;
 
 // Different screens of the game
-enum Screen { Menu, Settings, HowToPlay, Game, RiddleScreen, Notebook };
+enum Screen { Menu, Settings, HowToPlay, Game, RiddleScreen, Detective, Notebook, FinalGuess, Result };
 
 struct Button {
     sf::FloatRect rect;
@@ -22,7 +24,7 @@ struct Button {
 };
 
 struct RiddleData {
-    string object, question, answer, hint1, hint2, image;
+    string object, question, answer, hint1, image;
 };
 
 // Game variables
@@ -32,11 +34,15 @@ int currentRoom = 0;
 int ghostRoom = 0;
 int selectedChoice = -1;
 int score = 0;
+int PlayerGuess = -1;
 
-array<bool, 2> clueCollected{ false, false };  // 2 rooms hein abhi 
+array<bool, 4> clueCollected{ false, false, false, false };  // 4 rooms hein ab
+array<int, 4> hintsUsed{ 0, 0, 0, 0 }; // har room mai 1 hint allow
+array<string, 4> collectedClues{};
 
 string notebook = "";
 string statusMessage = "Explore the room. Choose one object to investigate.";
+string detectiveMessage = "Choose a puzzle first; then I can give you a hint.";
 
 map<string, sf::Texture> textures;
 sf::Font font;
@@ -45,8 +51,14 @@ sf::Music horrorMusic;
 float musicVolume = 35.f;
 bool soundEnabled = true;
 
-const array<string, 2> roomNames{ "The Bedroom", "The Library" };
-const array<int, 2> roomCodes{ 2, 4 }; // answer of room 1 and room 2 
+const array<string, 4> roomNames{ "The Bedroom", "The Library", "The Living Room", "The Attic" };
+const array<array<int, 4>, 4> roomCodes{ {
+    {{2,4,1,3}}, // 0
+    {{3,1,4,2}}, // 1
+    {{4,2,3,1}}, // 2
+    {{1,3,2,4}}  // 3
+
+} };// answer of rooms randomly
 
 // Functions used in game
 void drawMenu(sf::RenderWindow& window);
@@ -55,7 +67,10 @@ void drawHowToPlay(sf::RenderWindow& window);
 void drawGame(sf::RenderWindow& window);
 void drawRiddle(sf::RenderWindow& window);
 void drawNotebook(sf::RenderWindow& window);
-void handleClick(sf::RenderWindow& win, sf::Vector2f p);
+void drawDetective(sf::RenderWindow& window);
+void drawFinalGuess(sf::RenderWindow& window);
+void drawResult(sf::RenderWindow& window);
+void handleClick(sf::RenderWindow& win, float clickX, float clickY);
 
 // Loads an image and saves it for later use
 bool loadTexture(const string& key, const string& path) {
@@ -120,31 +135,42 @@ void drawButton(sf::RenderWindow& win, const Button& b,
 
     // condition ? if true then do etc : if false then do etc
     shape.setFillColor(selected
+        
+        //  dark brown,  higly visible
         ? sf::Color(94, 54, 34, 245)
         : sf::Color(7, 17, 32, 238));
+        // blue-black
 
     shape.setOutlineColor(selected
+        
+        // golden yellow (border of box)   max 255 transparency here 
         ? sf::Color(255, 203, 103)
         : sf::Color(126, 153, 179));
+        // dusty_blue grey colour
 
     shape.setOutlineThickness(selected ? 2.5f : 1.3f);
 
     win.draw(shape);
 
     drawText(win, b.label,
+    //  12 add kia bez left size se 12 pixel ke sapce dene phir text show ho
         b.rect.position.x + 12,
         b.rect.position.y + 12, 18);
+          // top sar 12 pixel space // 18 text ka font 
+      // kiy keh koi colour ham nay dey rahay to deafult colour(cream) use hota with 255 transparency
 }
 
 // Checks whether the mouse is inside a button or area
-bool hit(const sf::Vector2f& p, const sf::FloatRect& r) {
-    return r.contains(p);
+bool hit(float px, float py, const sf::FloatRect& r) {
+    return r.contains(px, py);
 }
 
 // Breaks long text into smaller lines
 void drawWrappedApprox(sf::RenderWindow& win, const string& text,
     float x, float y, unsigned size, unsigned maxChars,
-    sf::Color color = sf::Color(240, 235, 220)) {
+    sf::Color color = sf::Color(240, 235, 220))
+                         // cream colour
+{
 
     stringstream input(text);
     string word;
@@ -169,6 +195,8 @@ void drawWrappedApprox(sf::RenderWindow& win, const string& text,
 // Returns the riddle selected by the player based on the current room
 RiddleData getCurrentRiddle() {
     RiddleData r;
+    int ans = roomCodes[ghostRoom][currentRoom];
+    r.answer = to_string(ans);
 
     // Room 1 Riddles
     if (currentRoom == 0) {
@@ -176,18 +204,21 @@ RiddleData getCurrentRiddle() {
             r.object = "The Hidden Number";
             r.image = "clock.png";
             r.question = "I am the only even number that is also prime. Which number am I?";
+            r.hint1 = "Think about the smallest prime number.";
             r.answer = "2";
         }
         else if (selectedChoice == 1) {
             r.object = "The mystery";
             r.image = "bookshelf.png";
             r.question = "If a phantom loses one of its boots, how many feet does it still have left to walk?";
+            r.hint1 = "Same as the number of feets that we have normally.";
             r.answer = "2";
         }
         else {
             r.object = "Calculation";
             r.image = "globe.png";
             r.question = "Solve the cursed sum: \n (7 x 3) - 19 = ?";
+            r.hint1 = "Multiply 7 by 3 first.";
             r.answer = "2";
         }
     }
@@ -197,18 +228,21 @@ RiddleData getCurrentRiddle() {
             r.object = "The Grand Clock";
             r.image = "clock.png";
             r.question = "How many spooky corners are there in a haunted square room?";
+            r.hint1 = "Same as a normal square.";
             r.answer = "4";
         }
         else if (selectedChoice == 1) {
             r.object = "The Dusty Mirror";
             r.image = "bookshelf.png";
             r.question = "How many wooden legs does the haunted table standing in the middle of the dark room have?";
+            r.hint1 = "Same as a normal table.";
             r.answer = "4";
         }
         else {
             r.object = "The numeric nightmare";
             r.image = "globe.png";
-            r.question = "Solve the cursed sum :\n 10 - (3 x 2) = ?";;
+            r.question = "Solve the cursed sum :\n 10 - (3 x 2) = ?";
+            r.hint1 = "Multiply 3 by 2 first.";
             r.answer = "4";
         }
     }
@@ -218,18 +252,21 @@ RiddleData getCurrentRiddle() {
             r.object = "The Cold Fire";
             r.image = "fireplace.png";
             r.question = "Five doors are locked, but the ghost unlocks just one. How many escape routes are open?";
+            r.hint1 = "Only one door was unlocked.";
             r.answer = "1";
         }
         else if (selectedChoice == 1) {
             r.object = "The Broken Vase";
             r.image = "vase.png";
+            r.hint1 = "Look at the single candle mentioned.";
             r.question = "A dark room has only one flickering candle burning. How many flames are left in the dark?";
             r.answer = "1";
         }
         else {
             r.object = "The Numeric Nightmare";
             r.image = "window.png";
-            r.question = "Solve the cursed sum :\n (18 / 3) - 5 = ?";;
+            r.question = "Solve the cursed sum :\n (18 / 3) - 5 = ?";
+            r.hint1 = "Divide 18 by 3 first.";
             r.answer = "1";
         }
     }
@@ -239,18 +276,21 @@ RiddleData getCurrentRiddle() {
             r.object = "The Cold Fire";
             r.image = "fireplace.png";
             r.question = "A cursed music box plays its haunting melody in three broken notes before falling dead silent. How many notes echo through the dark room?";
+            r.hint1 = "Count the broken notes played.";
             r.answer = "3";
         }
         else if (selectedChoice == 1) {
             r.object = "The Dusty Window";
             r.image = "window.png";
             r.question = "Count the eyes of the beast carved in bone: one weeps blood, one sheds ash, and the third sees only your death. How many total gazes are fixed on you?";
+            r.image = "Count each eye described in the riddle.";
             r.answer = "3";
         }
         else {
             r.object = "The Numeric Nightmare";
             r.image = "vase.png";
-            r.question = "Solve the cursed sum :\n 7 - ((14 x 2) / 7) = ?";;
+            r.question = "Solve the cursed sum :\n 7 - ((14 x 2) / 7) = ?";
+            r.hint1 = "Multiply 14 by 2 first, then divide by 7.";
             r.answer = "3";
         }
     }
@@ -259,15 +299,54 @@ RiddleData getCurrentRiddle() {
 }
 
 // Resets the game when a new game starts
-void resetGame() {
+void resetGame() 
+{
+    gohstRoom = rand() % 4;
     currentRoom = 0;
     selectedChoice = -1;
     score = 0;
-    clueCollected = { false, false };
+    PlayerGuess = -1;
+    
+    clueCollected = { false, false, false, false };
+    hintsUsed = { 0, 0, 0, 0 };
+    clueCollected = {};
+    
     notebook.clear();
 
     statusMessage = "Explore the room. Choose one object to investigate.";
+    detectiveMessage = "Choose a puzzle first; then I can give you a hint.";
     screen = Game;
+}
+
+void  saveRoomClue()
+{
+    if (selectedChoice < 0 || clueCollected[currentRoom])
+    {
+        return;
+    }
+
+    clueCollected[currentRoom ]= true;
+    score += 25;
+
+    collectedClues[currentRoom] = "Room " + to_string(currentRoom + 1) + " digit: " + to_string(roomCodes[ghostRoom][currentRoom]);
+
+    statusMessage = "Clue saved in notebook.";
+
+    screen = Game;
+}
+
+void giveSingleHint()
+{
+    if (selectedChoice < 0)
+    {
+        detectiveMessage = "Open a puzzle first so I can give you a hint.";
+        return;
+    }
+
+    score = max(0, score - 5);
+    RiddleData r = getCurrentRiddle();
+    detectiveMessage = "Hint: " + r.hint1;
+    hintsUsed[currentRoom] = 1;
 }
 
 
