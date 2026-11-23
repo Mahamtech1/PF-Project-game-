@@ -1,0 +1,27 @@
+APPROVED COLLAGE ASSET MAP
+
+These separate panels were cropped from approved_ui_collage_reference.png.
+
+Used directly by the C++ game:
+- concept_menu.jpg: main menu artwork; its printed buttons have clickable hit areas.
+- concept_settings.jpg: settings screen atmosphere behind live controls.
+- concept_intro.jpg: how-to-play screen background.
+- concept_riddle.jpg: riddle screen background.
+- concept_detective.jpg: detective screen background.
+- concept_notebook.jpg and notebook_art.png: notebook screen background and notebook-page artwork.
+- concept_final_guess.jpg: final room selection background.
+- concept_correct_ending.jpg / concept_wrong_ending.jpg: result backgrounds.
+- room1.jpg / room2.jpg / room3.jpg / room4.jpg: room scene images extracted from the approved concept art.
+- detective.png: detective portrait extracted from the approved detective panel.
+- phantom.png / phantom_reveal.png: ghost artwork extracted from the approved ending panels.
+
+Also included as separate assets for reference/alternate concepts:
+- concept_room_select.jpg
+- concept_bedroom_screen.jpg
+- concept_study_screen.jpg
+- concept_attic_screen.jpg
+- concept_game_over.jpg
+- concept_failed_ending.jpg
+- concept_exit.jpg
+
+Object art and horror_ambience.wav are retained from the existing pack.
