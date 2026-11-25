@@ -390,12 +390,19 @@ void giveSingleHint()
 
 
 ///// MEMBER 2 - Game Screens
+// Ye function main menu ko draw karta hai. Is function ka kaam screen par menu dikhana hai, button click handle karna nahi.
 
 void drawMenu(sf::RenderWindow& window) {
+    // Menu ki background image poori window par display kar rahe hain. W aur H window ki width aur height hain.
     drawImage(window, "menu", 0, 0, static_cast<float>(W), static_cast<float>(H));
+    // Mouse ki position check karne ka section hai, taake hover effect sahi button par lage.
     //GETTING MOUSE POSITION TO CHECK WHICH MENU OPTION IS SELECTED
+// Mouse ki horizontal yani X position world coordinates mein le rahe hain.
     float mx = window.mapPixelToCoords(sf::Mouse::getPosition(window)).x;
+    // Mouse ki vertical yani Y position world coordinates mein le rahe hain.
+
     float my = window.mapPixelToCoords(sf::Mouse::getPosition(window)).y;
+// 4 menu options ke hover/click areas define kiye gaye hain. Har FloatRect mein position aur size hota hai.
 
     const array<sf::FloatRect, 4> menuZones{ {
         {{160,380},{410,78}}, {{160,475},{410,72}},
@@ -403,26 +410,45 @@ void drawMenu(sf::RenderWindow& window) {
     } };
 
     for (size_t i = 0; i < menuZones.size(); ++i) {
-        if (hit(mx, my, menuZones[i])) {
-            // CREATING A GLOW EFFECT
-            sf::RectangleShape glow(menuZones[i].size);
-            glow.setPosition(menuZones[i].position);
-            glow.setFillColor(sf::Color(255, 170, 65, 28));
-            glow.setOutlineColor(sf::Color(255, 194, 93, 230));
-            glow.setOutlineThickness(3.f);
+        // hit() check karta hai ke mouse cursor is menu area ke andar hai ya nahi.
 
+        if (hit(mx, my, menuZones[i])) {
+            // Agar cursor button ke upar ho to usay highlight karne ke liye glow banate hain.
+            // CREATING A GLOW EFFECT
+// Glow rectangle ka size us menu zone jitna rakha gaya hai.
+            sf::RectangleShape glow(menuZones[i].size);
+            // Glow ko usi button ki position par set karte hain.
+
+            glow.setPosition(menuZones[i].position);
+            // Glow ke andar halka transparent orange color set karte hain.
+            glow.setFillColor(sf::Color(255, 170, 65, 28));
+            // Glow ki outline ko bright golden/orange color dete hain.
+
+            glow.setOutlineColor(sf::Color(255, 194, 93, 230));
+            // set thickness to 3 pixels
+            glow.setOutlineThickness(3.f);
+// display on window
             window.draw(glow);
         }
     }
 }
 
+// Settings screen ka visual layout draw karne wala function.
 // DISPLAY GAME SETTING
+// Is function mein background, overlay, panel aur settings ke buttons display hote hain.
 void drawSettings(sf::RenderWindow& window) {
+    // Settings background image poori screen par lagate hain.
+
     drawImage(window, "concept_settings", 0, 0,
         static_cast<float>(W), static_cast<float>(H));
+// Poori window ke size ka rectangle banate hain jo background ko dark karega.
 
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
+    // Rectangle ko transparent black color dete hain. Aakhri value alpha/transparency hoti hai.
+
     shade.setFillColor(sf::Color(0, 0, 0, 175));
+    // Dark overlay draw karte hain taake panel aur text clearly nazar aaye.
+
     window.draw(shade);
 
     drawPanel(window, 260, 150, 680, 440, sf::Color(4, 9, 20, 245));
@@ -431,12 +457,18 @@ void drawSettings(sf::RenderWindow& window) {
         sf::Color(255, 203, 111));
 
     drawButton(window, {
+        // Sound ON/OFF button draw hota hai.
+
         {{360, 350}, {170, 58}},
+        // Ternary operator: soundEnabled true ho to SOUND: ON, warna SOUND: OFF show hota hai.
+
         soundEnabled ? "SOUND: ON" : "SOUND: OFF"
         }, true);
 
     drawButton(window, { {{560, 350}, {100, 58}}, "- VOL" });
     drawButton(window, { {{680, 350}, {100, 58}}, "+ VOL" });
+    // musicVolume ko integer aur string mein convert karke percentage ke sath display karte hain.
+
     drawText(window, "Volume: " + to_string(static_cast<int>(musicVolume)) + "%", 535, 435, 22, sf::Color(255, 211, 126));
 
     drawButton(window, {
@@ -444,12 +476,16 @@ void drawSettings(sf::RenderWindow& window) {
         }, true);
 }
 
+// How to Play screen draw karne wala function.
 // DISPLAY THE INSTRUCTIONS
+// Is screen par game ke rules aur objective player ko samjhaye jate hain.
 void drawHowToPlay(sf::RenderWindow& window) {
     drawImage(window, "concept_intro", 0, 0,
         static_cast<float>(W), static_cast<float>(H));
 
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
+    // Overlay ka black color aur transparency set karte hain.
+
     shade.setFillColor(sf::Color(0, 0, 0, 170));
     window.draw(shade);
 
@@ -457,6 +493,7 @@ void drawHowToPlay(sf::RenderWindow& window) {
 
     drawText(window, "READ BEFORE YOU EMBARRASS YOURSELF", 310, 130, 27,
         sf::Color(255, 203, 111));
+// Rules ko text ki form mein show karte hain: 4 rooms explore karne hain, har room mein 3 objects mein se 1 choose karna hai, clues collect karne hain aur end par phantom ka room guess karna hai.
 
     drawText(window,
         "1. Explore all 4 rooms and pick 1 of the 3 objects in each room.\n\n2. Each room gives a clue digit (1-4). Detective gives 1 hint per room (-5 pts).\n\n3. At the end, guess which room the phantom is hiding in.",
@@ -468,99 +505,155 @@ void drawHowToPlay(sf::RenderWindow& window) {
 
 }
 
+// Ye main gameplay screen hai jahan current room aur uske objects show hote hain.
 // DISPLAY CURENT ROOM AND OBJECT
+// Current room ka complete interface draw karne wala function.
 void drawGame(sf::RenderWindow& window) {
+// Safety check: agar currentRoom 0 se chhota ho jaye to use 0 kar dete hain.
+
     if (currentRoom < 0) currentRoom = 0;
+// Total 4 rooms hain aur indexing 0 se 3 tak hai, is liye currentRoom ko 3 se aage nahi jane dete.
+
     if (currentRoom > 3) currentRoom = 3;
+// Current room ki image draw hoti hai. currentRoom 0-based hai jabke image names Room 1 se start hain, is liye +1 kiya.
 
     drawImage(window, "room" + to_string(currentRoom + 1),
         0, 0, static_cast<float>(W), static_cast<float>(H));
+// Room background par dark overlay ke liye full-screen rectangle banate hain.
 
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
     shade.setFillColor(sf::Color(0, 0, 0, 82));
     window.draw(shade);
 
+    // Room number aur score display karne ka section.
     // ROOM INFO & SCORE
+// Room number ke liye top-left information panel draw karte hain.
+
     drawPanel(window, 20, 16, 270, 58, sf::Color(4, 9, 19, 230));
+// currentRoom + 1 se player ko human-readable room number dikhate hain, kyun ke array indexing zero se start hoti hai.
+
     drawText(window, "ROOM " + to_string(currentRoom + 1) + " / 4",
         38, 31, 22, sf::Color(255, 205, 111));
+// Score display karne ke liye top-right panel banate hain.
 
     drawPanel(window, 875, 16, 300, 58, sf::Color(4, 9, 19, 230));
+// Current score ko string mein convert karke screen par show karte hain.
+
     drawText(window, "Score: " + to_string(score), 895, 31, 21, sf::Color(255, 218, 128));
 
     drawButton(window, { {{750, 88}, {190, 46}}, "NOTEBOOK" });
+// Detective button ke sath remaining hints show karte hain. 1 se used hints minus karne par remaining hint milta hai.
+
     drawButton(window, { {{950, 88}, {225, 46}}, "DETECTIVE (" + to_string(1 - hintsUsed[currentRoom]) + " hint)" });
 
     drawPanel(window, 32, 145, 515, 105, sf::Color(3, 8, 18, 222));
+// roomNames array se current room ka naam nikal kar show karte hain.
+
     drawText(window, roomNames[currentRoom], 52, 158, 26, sf::Color(255, 203, 111));
+// Neeche wala conditional text decide karta hai ke player ko evidence milne ka message dikhana hai ya object choose karne ka.
+
     drawText(window,
+        // Agar current room ka clue collect ho chuka hai to pehla message show hoga.
+
         clueCollected[currentRoom]
         ? "Evidence recorded. Click below to continue."
         : "Choose one of 3 objects to investigate.",
         52, 198, 17, sf::Color(200, 215, 235));
+// 2D array mein har room ke 3 object image filenames rakhe gaye hain. Pehla index room aur doosra object select karta hai.
 
     const array<array<string, 3>, 4> roomObjects{ {
+// Rooms ke teen objects ki image filenames.
+
         {{"clock.png", "bookshelf.png", "globe.png"}},
         {{"clock.png", "bookshelf.png", "globe.png"}},
         {{"fireplace.png", "vase.png", "window.png"}},
         {{"fireplace.png", "window.png", "vase.png"}}
     } };
+// Teen objects ke buttons par display hone wale labels ki array.
 
     const array<string, 3> objectLabels{
         "English Riddle 1", "English Riddle 2", "Maths Puzzle"
     };
+// Loop current room ke 3 objects ke cards/buttons create karta hai.
 
     for (int i = 0; i < 3; ++i) {
+        // Har card ki X position calculate hoti hai. i barhne se agla card right side par aata hai.
+
         float x = 52.f + i * 370.f;
 
         drawPanel(window, x, 500, 340, 170,
             sf::Color(4, 8, 16, 238));
+// roomObjects[currentRoom][i] se current room aur selected index ke mutabiq image display karte hain.
 
         drawImage(window, roomObjects[currentRoom][i], x + 74, 507, 192, 100);
 
         drawButton(window, {
             {{x + 20, 614}, {300, 42}},
             clueCollected[currentRoom]
+            // Collected evidence ka label show hota hai.
+
             ? "EVIDENCE FOUND"
+            // Agar clue abhi collect nahi hua to object number aur uska label show hota hai.
+
             : (to_string(i + 1) + ". " + objectLabels[i])
             }, clueCollected[currentRoom]);
     }
 
     if (clueCollected[currentRoom]) {
+        // Clue milne ke baad hi next room ya final guess ka button show hota hai.
+
         drawButton(window, {
             {{430, 690}, {340, 48}},
+            // Agar currentRoom 3 se chhota hai to next room ka button; last room par final guess ka button show hota hai.
+
             currentRoom < 3 ? "ENTER NEXT ROOM" : "MAKE FINAL GUESS"
             }, true);
     }
     else {
+        // Player ko batate hain ke aage barhne ke liye puzzle solve karna zaroori hai.
+
         drawText(window, "Solve one puzzle to proceed.",
             450, 695, 17, sf::Color(255, 221, 163));
     }
 }
 
+// Selected object ka riddle display karne wala function.
 // Displays the selected riddle
+// Riddle screen ka background, question, object image aur navigation buttons draw hote hain.
 void drawRiddle(sf::RenderWindow& window) {
+    // Riddle screen ki background image poori window par lagate hain.
+
     drawImage(window, "concept_riddle", 0, 0,
         static_cast<float>(W), static_cast<float>(H));
 
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
+    // Overlay ka black color aur transparency set karte hain.
+
     shade.setFillColor(sf::Color(0, 0, 0, 145));
     window.draw(shade);
+// Riddle content ke liye central panel draw karte hain.
 
     drawPanel(window, 235, 105, 730, 545,
         sf::Color(4, 9, 21, 245));
+// getCurrentRiddle() current selection ke mutabiq riddle ka data return karta hai; usay r variable mein store karte hain.
 
     RiddleData r = getCurrentRiddle();
+// Current room number ko riddle heading mein display karte hain.
 
     drawText(window, "ROOM " + to_string(currentRoom + 1) + " / RIDDLE",
         285, 135, 22, sf::Color(255, 202, 111));
+// Riddle ke sath related object ki image r.image se le kar show karte hain.
 
     drawImage(window, r.image, 500, 180, 200, 105);
 
+// Riddle object ka naam screen par display karte hain.
+
     drawText(window, r.object, 520, 290, 26,
         sf::Color(205, 220, 246));
+// Riddle ka question show karte hain. drawWrappedApprox helper text ko multiple lines mein wrap karta hai.
 
     drawWrappedApprox(window, r.question, 295, 350, 22, 49);
+// Button draw karte hain different
 
     drawButton(window, { {{700, 650}, {170, 48}}, "DETECTIVE" });
     drawButton(window, { {{880, 650}, {150, 48}}, "NOTEBOOK" });
