@@ -394,9 +394,8 @@ void giveSingleHint()
 void drawMenu(sf::RenderWindow& window) {
     drawImage(window, "menu", 0, 0, static_cast<float>(W), static_cast<float>(H));
     //GETTING MOUSE POSITION TO CHECK WHICH MENU OPTION IS SELECTED
-    sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-    float mx = mousePos.x;
-    float my = mousePos.y;
+    float mx = window.mapPixelToCoords(sf::Mouse::getPosition(window)).x;
+    float my = window.mapPixelToCoords(sf::Mouse::getPosition(window)).y;
 
     const array<sf::FloatRect, 4> menuZones{ {
         {{160,380},{410,78}}, {{160,475},{410,72}},
