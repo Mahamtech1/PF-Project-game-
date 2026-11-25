@@ -934,8 +934,9 @@ void processEvents(sf::RenderWindow& window) {
             // check left mouse button 
             if (mouse->button == sf::Mouse::Button::Left) 
             {
-                sf::Vector2f clickPos = window.mapPixelToCoords(mouse->position);
-                handleClick(window, clickPos.x, clickPos.y);
+                float clickX = static_cast<float>(mouse->position.x);
+                float clickY = static_cast<float>(mouse->position.y);
+                handleClick(window, clickX, clickY);
             }
         }
 
