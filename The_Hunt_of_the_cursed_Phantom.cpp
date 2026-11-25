@@ -728,13 +728,15 @@ void drawNotebook(sf::RenderWindow& window) {
     }
 
     drawText(window, "Tip: Solve one puzzle in each room to gather clues.", 175, 422, 13, sf::Color(74, 45, 27));
-
-    drawText(window, "CASE-FILE CODE KEY", 175, 442, 16, sf::Color(74, 45, 27));
-    drawText(window, "2-4-1-3 = Room 1 Bedroom", 175, 468, 14, sf::Color(61, 42, 27));// Ye code Room  ko  map kartay hai.
-
-    drawText(window, "3-1-4-2 = Room 2 Library", 175, 490, 14, sf::Color(61, 42, 27));
-    drawText(window, "4-2-3-1 = Room 3 Living Room", 175, 512, 14, sf::Color(61, 42, 27));
-    drawText(window, "1-3-2-4 = Room 4 Attic", 175, 534, 14, sf::Color(61, 42, 27));
+    if (returnAfterNotebook == FinalGuess) 
+    {
+         drawText(window, "CASE-FILE CODE KEY", 175, 442, 16, sf::Color(74, 45, 27));
+         drawText(window, "2-4-1-3 = Room 1 Bedroom", 175, 468, 14, sf::Color(61, 42, 27));// Ye code Room  ko  map kartay hai.
+         drawText(window, "3-1-4-2 = Room 2 Library", 175, 490, 14, sf::Color(61, 42, 27));
+         drawText(window, "4-2-3-1 = Room 3 Living Room", 175, 512, 14, sf::Color(61, 42, 27));
+         drawText(window, "1-3-2-4 = Room 4 Attic", 175, 534, 14, sf::Color(61, 42, 27));        
+   
+    }
 
     drawText(window, "MY NOTES", 650, 165, 20, sf::Color(74, 45, 27));
     drawText(window, "\n Space Bar: 1 word space \n\n Enter : move to next line", 670, 185, 12, sf::Color(74, 45, 27));
@@ -793,7 +795,7 @@ void drawFinalGuess(sf::RenderWindow& window) {
 
     drawPanel(window, 260, 100, 680, 550, sf::Color(4, 8, 19, 235));
     drawText(window, "THE FINAL DEDUCTION", 380, 140, 34, sf::Color(255, 203, 111));
-    drawText(window, "Where is the phantom hiding?", 375, 220, 22, sf::Color(200, 218, 242));
+    drawText(window, "See the case study in notebook now \nand match with your sequence.\n\nWhere is the phantom hiding?", 375, 220, 22, sf::Color(200, 218, 242));
 // Loop 4 rooms ke liye 4 guess buttons create karta hai.
 
     for (int i = 0; i < 4; ++i) {
