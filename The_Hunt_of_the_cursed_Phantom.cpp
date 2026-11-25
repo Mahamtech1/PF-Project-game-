@@ -126,7 +126,7 @@ void drawImage(sf::RenderWindow& win, const string& key,
 // Draws a panel on the screen
 void drawPanel(sf::RenderWindow& win, float x, float y,
     float w, float h,
-             // dark blue-black color     transparency maximum
+             // dark blue-black color     maximum alpha
     sf::Color color = sf::Color(5, 10, 22, 225)) {
 
     sf::RectangleShape panel({ w, h });
@@ -161,14 +161,14 @@ void drawButton(sf::RenderWindow& win, const Button& b,   // rect & label (data-
 
     shape.setFillColor(selected
 
-        //  dark brown,  higly visible (transparency high)
+        //  dark brown,  higly visible (alpha high)
         ? sf::Color(94, 54, 34, 245)
         : sf::Color(7, 17, 32, 238));
          // blue-black
 
     shape.setOutlineColor(selected
 
-        // golden yellow (border of box)   max 255 transparency here 
+        // golden yellow (border of box)   max 255 alpha 
         ? sf::Color(255, 203, 103)
         : sf::Color(126, 153, 179));
     // dusty_blue grey colour
