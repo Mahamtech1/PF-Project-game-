@@ -2,25 +2,29 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
-#include <optional>
-#include <string>
+#include <optional>   // matlab event ho bhi saka hai or nahih bhi 
+// example : process event wala function 
+
+#include <string> // texts , questions , hint ,rooms name
 #include <array>
-#include <algorithm>
-#include <map>
-#include <sstream>
+#include <algorithm> // volume controlling 
+#include <map> // text or uss ke image to combine store karnay ke leye
+#include <sstream> // draw wrapped accross , long text ko short mai break karta 
+// exaple riddles kay question ko next line mai show karnay ke leye keh woh box mai rahain 
 
 using namespace std;
 
 const unsigned W = 1200;
 const unsigned H = 760;
 
-// Different screens of the game
+// Different screens of the game 9 in total 
 enum Screen { Menu, Settings, HowToPlay, Game, RiddleScreen, Detective, Notebook, FinalGuess, Result };
 
 struct Button {
-    sf::FloatRect rect;
-    string label;
-};
+    sf::FloatRect rect;         // data members : rect & label
+    string label;                // FloatRect stores left x , top y , w & h
+};                               // rect is our variable
+                                 // lable button kay upar likha howa text store karta hai
 
 struct RiddleData {
     string object, question, answer, hint1, image;
@@ -36,30 +40,36 @@ int score = 0;
 int playerGuess = -1;
 
 array<bool, 4> clueCollected{ false, false, false, false };  // 4 rooms hein ab 
+// abhi kese ka clue collect nae howa iss leye false hein sab
+
 array<int, 4> hintsUsed{ 0, 0, 0, 0 }; // har room mai 1 hint allow
-array<string, 4> collectedClues{};
+array<string, 4> collectedClues{}; 
+// haar room ka clue jab collect kar lain gay to yahan message store ho ga 
 
 
-string notebook = "";
+string notebook = ""; // player joh notes khud type karta hai woh yahan store hoon gay
 string statusMessage = "Explore the room. Choose one object to investigate.";
 string detectiveMessage = "Choose a puzzle first; then I can give you a hint.";
 
-map<string, sf::Texture> textures;
+map<string, sf::Texture> textures; // yahan image ka name or value store hoti hai
 sf::Font font;
 sf::Music horrorMusic;
 
-float musicVolume = 35.f;
-bool soundEnabled = true;
+float musicVolume = 35.f;  // music by defalut 35% rakha hai
+bool soundEnabled = true;  // music by default on rakha hai 
 
 const array<string, 4> roomNames{ "The Bedroom", "The Library", "The Living Room", "The Attic" };
-const array<array <int, 4>, 4> roomCodes{ {
+// yahan par rooms kay name store ho rahay hein 
+
+const array<array <int, 4>, 4> roomCodes
+{ {
 
     {{2,4,1,3}}, // 0
     {{3,1,4,2}}, // 1
     {{4,2,3,1}}, // 2
     {{1,3,2,4}}  // 3
 
-} };// answer of rooms randomly
+} };// answer of rooms array kay andar array
 
 // Functions used in game
 
@@ -76,10 +86,17 @@ void drawResult(sf::RenderWindow& window);
 void handleClick(sf::RenderWindow& win, float clickX, float clickY);
 
 // Loads an image and saves it for later use
-bool loadTexture(const string& key, const string& path) {
+bool loadTexture(const string& key, const string& path)
+{
+    // yeh ek temporary texture object banata hai 
     sf::Texture tex;
-    if (!tex.loadFromFile(path)) return false;
+
+    if (!tex.loadFromFile(path)) 
+    {
+        return false;
+    }
     textures.insert_or_assign(key, move(tex));
+    // key kay sath tex ko map mai dalta hai 
     return true;
 }
 
@@ -87,50 +104,54 @@ bool loadTexture(const string& key, const string& path) {
 void drawImage(sf::RenderWindow& win, const string& key,
     float x, float y, float w, float h) {
 
-    auto it = textures.find(key);
-    if (it == textures.end()) return;
+    auto it = textures.find(key);// map mai key find karta hai , entry ka iterator return karta hai
+    if (it == textures.end())
+    {
+        return;  // agr image na millay to function ruk jata hai
+    }
 
-    sf::Sprite sprite(it->second);
-    const auto sz = it->second.getSize();
-
+    sf::Sprite sprite(it->second);     // agr mil jay to sprite banata hai
+    const auto sz = it->second.getSize(); // texture ke asl pixel width or heigth leta hai
+                                                             //    sz.x      sz.y
     sprite.setPosition({ x, y });
     sprite.setScale({
+        // formula: desired size / original size
         w / static_cast<float>(sz.x),
         h / static_cast<float>(sz.y)
         });
 
-    win.draw(sprite);
+    win.draw(sprite);   // window par sprtie draw karta hai
 }
 
 // Draws a panel on the screen
 void drawPanel(sf::RenderWindow& win, float x, float y,
     float w, float h,
-    // blue color     transparency
+             // dark blue-black color     transparency maximum
     sf::Color color = sf::Color(5, 10, 22, 225)) {
 
     sf::RectangleShape panel({ w, h });
     panel.setPosition({ x, y });
     panel.setFillColor(color);
-    panel.setOutlineColor(sf::Color(190, 139, 62, 230));
+    panel.setOutlineColor(sf::Color(190, 139, 62, 230)); // golden border
     panel.setOutlineThickness(1.5f);
 
-    win.draw(panel);
+    win.draw(panel); // panel ko window par draw kardo
 }
 
 // Displays text on the screen
 void drawText(sf::RenderWindow& win, const string& s,
     float x, float y, unsigned size = 20,
     sf::Color color = sf::Color(240, 235, 220)) {
-
-    sf::Text t(font, s, size);
+                              // cream colour 
+    sf::Text t(font, s, size);  // s = string 
     t.setFillColor(color);
     t.setPosition({ x, y });
 
-    win.draw(t);
+    win.draw(t);   // text ko drwa karta hai
 }
 
 // Draws a button with its label
-void drawButton(sf::RenderWindow& win, const Button& b,
+void drawButton(sf::RenderWindow& win, const Button& b,   // rect & label (data-members)
     bool selected = false) {
 
     sf::RectangleShape shape({ b.rect.size.x, b.rect.size.y });
@@ -140,10 +161,10 @@ void drawButton(sf::RenderWindow& win, const Button& b,
 
     shape.setFillColor(selected
 
-        //  dark brown,  higly visible
+        //  dark brown,  higly visible (transparency high)
         ? sf::Color(94, 54, 34, 245)
         : sf::Color(7, 17, 32, 238));
-    // blue-black
+         // blue-black
 
     shape.setOutlineColor(selected
 
@@ -169,7 +190,7 @@ void drawButton(sf::RenderWindow& win, const Button& b,
 // Checks whether the click coordinates are inside a button or area
 bool hit(float px, float py, const sf::FloatRect& r)
 {
-    return r.contains({ px,py });
+    return r.contains({ px,py });  // it return true ya false
 }
 
 // Breaks long text into smaller lines
@@ -179,15 +200,19 @@ void drawWrappedApprox(sf::RenderWindow& win, const string& text,
     //                         cream colour 
 {
 
-    stringstream input(text);
-    string word;
-    string line = "";
-    float currentY = y;
+    stringstream input(text);  // text ko word by word read karta hai
+    string word;  // ek word hold karnay ke leye
+    string line = "";   // current line ka text store karnay ke leye
+    float currentY = y;   // jis y-coordinate par line draw ho ge
 
-    while (input >> word) {
-        if (line.length() + word.length() + 1 > maxChars && line != "") {
+    while (input >> word) // jab tak words miltay rahain loop chalatay raho 
+    {
+        if (line.length() + word.length() + 1 > maxChars && line != "")
+        { //Agar naya word add karne se line maxChars se lambi ho jaye aur line khali na ho
             drawText(win, line, x, currentY, size, color);
+            //phele wale line print kar do 
             currentY = currentY + size + 7;
+            // neechay karta line ko takeh next line ban sakay 
             line = "";
         }
 
@@ -198,14 +223,16 @@ void drawWrappedApprox(sf::RenderWindow& win, const string& text,
         line = line + word;
     }
 
-    if (line != "") drawText(win, line, x, currentY, size, color);
+    if (line != "")
+    {
+        drawText(win, line, x, currentY, size, color);
+    }
+    // Loop khatam honay ke baad agar aakhri line mein text bacha ho to usay bhi draw karta hai.
 }
 
 // Returns the riddle selected by the player based on the current room
 RiddleData getCurrentRiddle() {
     RiddleData r;
-    int ans = roomCodes[ghostRoom][currentRoom];
-    r.answer = to_string(ans);
 
     // Room 1 Riddles
     if (currentRoom == 0) {
@@ -320,7 +347,7 @@ void resetGame() {
 
     clueCollected = { false, false, false, false };
     hintsUsed = { 0, 0, 0, 0 };
-    collectedClues = {};
+    collectedClues = {}; // string jab clue clooect hota to string wala message store kar leta
     notebook.clear();
 
     statusMessage = "Explore the room. Choose one object to investigate.";
@@ -332,12 +359,12 @@ void resetGame() {
 void saveRoomClue()
 {
     if (selectedChoice < 0 || clueCollected[currentRoom])
-    {
+    {                         // already collected hai (true hai)
         return;
     }
 
     clueCollected[currentRoom] = true;
-    score += 25;
+    score += (hintsUsed[currentRoom] ? 20 : 25);
 
     collectedClues[currentRoom] = "Clue recorded. Note your puzzle digit.";
 
@@ -354,7 +381,6 @@ void giveSingleHint()
         return;
     }
 
-    score = max(0, score - 5);
     RiddleData r = getCurrentRiddle();
     detectiveMessage = "Hint: " + r.hint1;
     hintsUsed[currentRoom] = 1;
