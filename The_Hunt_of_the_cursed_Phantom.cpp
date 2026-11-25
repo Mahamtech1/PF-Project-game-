@@ -472,7 +472,7 @@ void drawSettings(sf::RenderWindow& window) {
     drawText(window, "Volume: " + to_string(static_cast<int>(musicVolume)) + "%", 535, 435, 22, sf::Color(255, 211, 126));
 
     drawButton(window, {
-        {{440,650},{320,58}}, "BACK TO MENU"
+        {{500,650},{220,58}}, "BACK TO MENU"
         }, true);
 }
 
@@ -500,7 +500,7 @@ void drawHowToPlay(sf::RenderWindow& window) {
         285, 220, 20, sf::Color(240, 235, 220));
 
     drawButton(window, {
-        {{440,650},{320,58}}, "BACK TO MENU"
+        {{500,650},{220,58}}, "BACK TO MENU"
         }, true);
 
 }
@@ -603,7 +603,7 @@ void drawGame(sf::RenderWindow& window) {
         // Clue milne ke baad hi next room ya final guess ka button show hota hai.
 
         drawButton(window, {
-            {{430, 690}, {340, 48}},
+            {{480, 690}, {240, 48}},
             // Agar currentRoom 3 se chhota hai to next room ka button; last room par final guess ka button show hota hai.
 
             currentRoom < 3 ? "ENTER NEXT ROOM" : "MAKE FINAL GUESS"
@@ -658,7 +658,7 @@ void drawRiddle(sf::RenderWindow& window) {
     drawButton(window, { {{700, 650}, {170, 48}}, "DETECTIVE" });
     drawButton(window, { {{880, 650}, {150, 48}}, "NOTEBOOK" });
     drawButton(window, { {{610,565},{320,54}}, "Clue mil gaya,MIRACLE...MIRAClE" }, true);
-    drawButton(window, { {{1040,650},{120,48}}, "BACK" });
+    drawButton(window, { {{1040,650},{90,48}}, "BACK" });
 }
 
 // Member 2 ka Detective feature: har room mein maximum 1 hint aur har hint par 5 points ki penalty.
@@ -688,8 +688,8 @@ void drawDetective(sf::RenderWindow& window) {
 
     drawWrappedApprox(window, detectiveMessage, 550, 235, 21, 27);
     drawText(window, "Limit: 1 hint per room (-5 points).", 545, 425, 16, sf::Color(222, 199, 155));// Player ko hint ki limit aur penalty batate hain: har room mein 1 hint, aur 5 points minus.
-    drawButton(window, { {{400,570},{260,60}}, hintsUsed[currentRoom] < 1 ? "GET 1 HINT (-5)" : "HINT USED" }, true);
-    drawButton(window, { {{900,650},{220,50}}, "BACK" });
+    drawButton(window, { {{400,570},{200,60}}, hintsUsed[currentRoom] < 1 ? "GET 1 HINT (-5)" : "HINT USED" }, true);
+    drawButton(window, { {{870,650},{100,50}}, "BACK" });
 }
 
 // Detective ki notebook display karne wala function.
