@@ -427,7 +427,7 @@ void drawSettings(sf::RenderWindow& window) {
 
     drawPanel(window, 260, 150, 680, 440, sf::Color(4, 9, 20, 245));
 
-    drawText(window, "GAME SETTINGS", 440, 190, 36,
+    drawText(window, "gAME SETTINGS", 440, 190, 36,
         sf::Color(255, 203, 111));
 
     drawButton(window, {
