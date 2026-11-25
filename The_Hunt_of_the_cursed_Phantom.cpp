@@ -690,8 +690,10 @@ void drawResult(sf::RenderWindow& window) {
 }
 
 // Member 3
-
-void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
+// to handle mouse clicks
+// renderwindow is used to create and manage window 
+void handleClick(sf::RenderWindow& win, float clickX, float clickY) 
+{
 
     if (screen == Menu) {
         if (hit(clickX, clickY, { {160, 380}, {410, 78} }))
@@ -704,21 +706,33 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
             screen = HowToPlay;
 
         else if (hit(clickX, clickY, { {160, 650}, {410, 72} }))
+            // sfml function to close window 
             win.close();
 
         return;
     }
 
-    if (screen == Settings) {
-        if (hit(clickX, clickY, { {360, 350}, {170, 58} })) {
+    if (screen == Settings) 
+    {
+        // on off sound
+        if (hit(clickX, clickY, { {360, 350}, {170, 58} })) 
+        {
+           // ! gives oppsite answers
             soundEnabled = !soundEnabled;
+            // condition check?true case:false case
             horrorMusic.setVolume(soundEnabled ? musicVolume : 0.f);
         }
-        else if (hit(clickX, clickY, { {560, 350}, {100, 58} })) {
+            // to decrease volume 
+        else if (hit(clickX, clickY, { {560, 350}, {100, 58} })) 
+        {
+            // max is a function which gives maximum value, 0 os used so volume does not go below
             musicVolume = max(0.f, musicVolume - 10.f);
             horrorMusic.setVolume(soundEnabled ? musicVolume : 0.f);
         }
-        else if (hit(clickX, clickY, { {680, 350}, {100, 58} })) {
+            // to increase volume 
+        else if (hit(clickX, clickY, { {680, 350}, {100, 58} })) 
+        {
+            // volume cannot exceed above 100
             musicVolume = min(100.f, musicVolume + 10.f);
             horrorMusic.setVolume(soundEnabled ? musicVolume : 0.f);
         }
@@ -735,21 +749,28 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
         return;
     }
 
-    if (screen == Game) {
+    if (screen == Game) 
+    {
+        // notebook button 
 
-        if (hit(clickX, clickY, { {750, 88}, {190, 46} })) {
+        if (hit(clickX, clickY, { {750, 88}, {190, 46} })) 
+        {
+            // after closing notebook it will show game page
             returnAfterNotebook = Game;
             screen = Notebook;
             return;
         }
-
+        // detective button
         if (hit(clickX, clickY, { {950, 88}, {225, 46} })) {
             screen = Detective;
             return;
         }
-
-        if (!clueCollected[currentRoom]) {
-            for (int i = 0; i < 3; ++i) {
+        // if clue is not collected than condition is true if it is collected then it is false
+        if (!clueCollected[currentRoom]) 
+        {
+            for (int i = 0; i < 3; ++i) 
+            {
+                // rectangle position and size 
                 sf::FloatRect r({ 52.f + i * 370.f, 500.f }, { 340.f, 170.f });
 
                 if (hit(clickX, clickY, r)) {
@@ -759,11 +780,16 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
                 }
             }
         }
+            // this condition will check whether the clie of current room is collected 
         else if (hit(clickX, clickY, { {430, 690}, {340, 48} })) {
-            if (currentRoom < 3) {
+            if (currentRoom < 3) 
+            {
+                // to move to the next room no.
                 ++currentRoom;
+                // to reset selected choice
                 selectedChoice = -1;
             }
+                // this will execute after completing all rooms
             else {
                 screen = FinalGuess;
             }
@@ -771,26 +797,30 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
 
         return;
     }
-
-    if (screen == RiddleScreen) {
-
-        if (hit(clickX, clickY, { {700, 650}, {170, 48} })) {
+     // detective button 
+    if (screen == RiddleScreen) 
+    {
+        if (hit(clickX, clickY, { {700, 650}, {170, 48} })) 
+        {
             screen = Detective;
             return;
         }
-
-        if (hit(clickX, clickY, { {880, 650}, {150, 48} })) {
+        // notebook button 
+        if (hit(clickX, clickY, { {880, 650}, {150, 48} })) 
+        {
             returnAfterNotebook = RiddleScreen;
             screen = Notebook;
             return;
         }
-
-        if (hit(clickX, clickY, { {1040, 650}, {120, 48} })) {
+         // back to game button 
+        if (hit(clickX, clickY, { {1040, 650}, {120, 48} })) 
+        {
             screen = Game;
             return;
         }
-
-        if (hit(clickX, clickY, { {610, 565}, {320, 54} })) {
+        // save clue button 
+        if (hit(clickX, clickY, { {610, 565}, {320, 54} })) 
+        {
             saveRoomClue();
             return;
         }
@@ -798,13 +828,18 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
         return;
     }
 
-    if (screen == Detective) {
-        if (hit(clickX, clickY, { {400, 570}, {260, 60} })) {
+    if (screen == Detective) 
+    {
+        // hint button 
+        if (hit(clickX, clickY, { {400, 570}, {260, 60} })) 
+        {
             giveSingleHint();
             return;
         }
-
-        if (hit(clickX, clickY, { {900, 650}, {220, 50} })) {
+        // back button 
+        if (hit(clickX, clickY, { {900, 650}, {220, 50} })) 
+        {
+            // the purpose of this is to send the player back to the screen which he was using 
             screen = selectedChoice < 0 ? Game : RiddleScreen;
             return;
         }
@@ -812,23 +847,31 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
         return;
     }
 
-    if (screen == Notebook) {
+    if (screen == Notebook) 
+    {
+        // to open and close notebook 
         if (hit(clickX, clickY, { {1000, 25}, {185, 48} }))
+            // to return to the same screen which the player was using 
             screen = returnAfterNotebook;
 
         return;
     }
 
-    if (screen == FinalGuess) {
+    if (screen == FinalGuess) 
+    {
+        // notebook button 
         if (hit(clickX, clickY, { {1010, 40}, {150, 48} })) {
             returnAfterNotebook = FinalGuess;
             screen = Notebook;
             return;
         }
 
-        for (int i = 0; i < 4; ++i) {
+        for (int i = 0; i < 4; ++i) 
+        {
+            // to make the layout of choices
             sf::FloatRect r({ 355.f + (i % 2) * 255.f, 350.f + (i / 2) * 90.f }, { 220, 64.f });
-            if (hit(clickX, clickY, r)) {
+            if (hit(clickX, clickY, r)) 
+            {
                 playerGuess = i;
                 if (playerGuess != ghostRoom) score = 0;
                 screen = Result;
@@ -839,7 +882,8 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
         return;
     }
 
-    if (screen == Result) {
+    if (screen == Result) 
+    {
         if (hit(clickX, clickY, { {195, 555}, {320, 58} }))
             screen = Menu;
 
@@ -848,10 +892,15 @@ void handleClick(sf::RenderWindow& win, float clickX, float clickY) {
 }
 
 // Draws whichever screen is currently open
-void drawCurrentScreen(sf::RenderWindow& window) {
+void drawCurrentScreen(sf::RenderWindow& window) 
+{
+    // window clear is used to clear the previous frame
+    // colours are RGB
     window.clear(sf::Color(3, 8, 18));
-
-    switch (screen) {
+    
+    // to draw frame
+    switch (screen) 
+    {
     case Menu:        drawMenu(window);       break;
     case Settings:    drawSettings(window);   break;
     case HowToPlay:   drawHowToPlay(window);  break;
@@ -862,30 +911,44 @@ void drawCurrentScreen(sf::RenderWindow& window) {
     case FinalGuess:  drawFinalGuess(window); break;
     case Result:      drawResult(window);     break;
     }
-
+   // to display frame 
     window.display();
 }
 
 // Checks mouse and keyboard events
 void processEvents(sf::RenderWindow& window) {
-    while (true) {
+    while (true) 
+    {
+        // poll event is used to check and retrieve event from window 
+        // optional is used to check if the event is available or not
         optional<sf::Event> event = window.pollEvent();
+        // if event is not available condition will become true
         if (!event.has_value()) break;
-
+        
+        // to check 8f the event is about to close the window 
         if (event->is<sf::Event::Closed>())
             window.close();
-
-        if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) {
-            if (mouse->button == sf::Mouse::Button::Left) {
+        
+       // mouse button event 
+        if (const auto* mouse = event->getIf<sf::Event::MouseButtonPressed>()) 
+        {
+            // check left mouse button 
+            if (mouse->button == sf::Mouse::Button::Left) 
+            {
                 sf::Vector2f clickPos = window.mapPixelToCoords(mouse->position);
                 handleClick(window, clickPos.x, clickPos.y);
             }
         }
 
         // Handles typing inside the notebook
-        if (screen == Notebook) {
-            if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
-                if (key->code == sf::Keyboard::Key::Backspace && !notebook.empty()) {
+        if (screen == Notebook) 
+        {
+            if (const auto* key = event->getIf<sf::Event::KeyPressed>()) 
+            {
+                // backspace use
+                if (key->code == sf::Keyboard::Key::Backspace && !notebook.empty()) 
+                {
+                    // remove last character of string 
                     notebook.pop_back();
                 }
             }
