@@ -779,43 +779,63 @@ void drawNotebook(sf::RenderWindow& window) {
     drawButton(window, { {{1000, 30}, {185, 48}}, "CLOSE NOTEBOOK" }, true);
 }
 
+// Member 2 ka final stage: player room guess karta hai aur phir result screen par apna answer aur score dekhta hai.
 // Member 2 addition: Final Guess & Result screens
+// Final guess screen draw hoti hai jahan player phantom ki hiding place select karta hai.
 void drawFinalGuess(sf::RenderWindow& window) {
-    drawImage(window, "concept_final_guess", 0, 0, static_cast<float>(W), static_cast<float>(H));
+    drawImage(window, "concept_final_guess", 0, 0, static_cast<float>(W), static_cast<float>(H));// Final guess screen ki background image poori window par display karte hain.
+// Background ko dark karne ke liye overlay rectangle banate hain.
+
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
     shade.setFillColor(sf::Color(0, 0, 0, 125));
     window.draw(shade);
+// Final deduction ke options ke liye central panel draw karte hain.
 
     drawPanel(window, 260, 100, 680, 550, sf::Color(4, 8, 19, 235));
     drawText(window, "THE FINAL DEDUCTION", 380, 140, 34, sf::Color(255, 203, 111));
     drawText(window, "Where is the phantom hiding?", 375, 220, 22, sf::Color(200, 218, 242));
+// Loop 4 rooms ke liye 4 guess buttons create karta hai.
 
     for (int i = 0; i < 4; ++i) {
+        // i % 2 buttons ko 2 columns mein rakhta hai aur i / 2 row calculate karta hai. Is tarah 4 buttons 2x2 layout mein aate hain.
+
         drawButton(window, { {{355.f + (i % 2) * 255.f, 350.f + (i / 2) * 90.f}, {220, 64}}, "ROOM " + to_string(i + 1) }, true);
     }
     drawButton(window, { {{1010, 40}, {150, 48}}, "NOTEBOOK" });
 }
+// Player ke guess ke baad result screen draw karne wala function.
 
 void drawResult(sf::RenderWindow& window) {
+    // Ternary operator playerGuess aur ghostRoom compare karta hai: match ho to correct ending, warna wrong ending image.
+
     drawImage(window, playerGuess == ghostRoom ? "concept_correct_ending" : "concept_wrong_ending", 0, 0, static_cast<float>(W), static_cast<float>(H));
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
     shade.setFillColor(playerGuess == ghostRoom ? sf::Color(0, 8, 14, 125) : sf::Color(28, 0, 5, 135));
     window.draw(shade);
 
     drawImage(window, "phantom_reveal", 665, 65, 440, 650);
+// Result message aur score ke liye left side par dark panel draw karte hain.
+
     drawPanel(window, 55, 145, 610, 450, sf::Color(2, 5, 12, 238));
+// Check karte hain ke player ka guess actual ghostRoom ke equal hai ya nahi.
 
     if (playerGuess == ghostRoom) {
-        drawText(window, "YOU FOUND THE PHANTOM", 95, 195, 32, sf::Color(200, 225, 218));
-        drawWrappedApprox(window, "You solved the mystery and escaped the curse.", 95, 260, 21, 43);
+        drawText(window, "YOU FOUND THE PHANTOM", 95, 195, 32, sf::Color(200, 225, 218));//agr equal hoa to
+        drawWrappedApprox(window, "You solved the mystery and escaped the curse.", 95, 260, 21, 43);// Correct guess par mystery solve hone aur curse se bachne ka message show karte hain.
+
     }
     else {
-        drawText(window, "WRONG ROOM GUESS", 95, 195, 30, sf::Color(255, 90, 100));
-        drawWrappedApprox(window, "The phantom found you in the dark.", 95, 260, 21, 43);
+        drawText(window, "WRONG ROOM GUESS", 95, 195, 30, sf::Color(255, 90, 100));//galat room guess kia
+        drawWrappedApprox(window, "The phantom found you in the dark.", 95, 260, 21, 43);// Player ko batate hain ke phantom ne usay dhoond liya.
+// Actual phantom room number show karte hain. +1 is liye kyun ke ghostRoom ki indexing 0 se start hoti hai.
+
         drawText(window, "Phantom was in Room " + to_string(ghostRoom + 1) + ".", 95, 365, 22, sf::Color(255, 175, 175));
     }
+// Game ke end par final score 100 mein se display karte hain.
 
     drawText(window, "FINAL SCORE: " + to_string(score) + " / 100", 95, 440, 28, sf::Color(255, 211, 126));
+    // Game complete hone ke baad main menu par wapas jane ka button draw karte hain.
+
     drawButton(window, { {{195, 555}, {320, 58}}, "RETURN TO MENU" }, true);
 }
 
