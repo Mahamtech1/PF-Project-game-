@@ -661,55 +661,77 @@ void drawRiddle(sf::RenderWindow& window) {
     drawButton(window, { {{1040,650},{120,48}}, "BACK" });
 }
 
+// Member 2 ka Detective feature: har room mein maximum 1 hint aur har hint par 5 points ki penalty.
 // Member 2 addition: Detective screen (1 hint only)
+// Detective screen ka visual layout draw hota hai. Hint dene aur score minus karne ka actual logic event-handling code mein hota hai.
 void drawDetective(sf::RenderWindow& window) {
+    // Background mein wahi room show karte hain jahan player is waqt hai.
+
     drawImage(window, "room" + to_string(currentRoom + 1), 0, 0, static_cast<float>(W), static_cast<float>(H));
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
     shade.setFillColor(sf::Color(0, 0, 0, 185));
     window.draw(shade);
+// Detective ke liye central panel draw karte hain.
 
     drawPanel(window, 180, 85, 840, 590, sf::Color(4, 9, 20, 245));
+    // Detective character ki image panel ke left side par display karte hain.
+
     drawImage(window, "detective", 205, 125, 290, 470);
     drawText(window, "THE DETECTIVE", 545, 130, 31, sf::Color(255, 203, 111));
+    // Current room mein kitne hints use hue hain, woh 1 ki limit ke sath show karte hain.
+
     drawText(window, "Hints used: " + to_string(hintsUsed[currentRoom]) + " / 1", 545, 180, 19, sf::Color(198, 218, 247));
+// Detective ke message ke peeche panel draw karte hain.
 
     drawPanel(window, 530, 215, 455, 185, sf::Color(12, 17, 28, 245));
-    drawWrappedApprox(window, detectiveMessage, 550, 235, 21, 27);
-    drawText(window, "Limit: 1 hint per room (-5 points).", 545, 425, 16, sf::Color(222, 199, 155));
+    // detectiveMessage variable ka hint/message readable wrapped text mein display karte hain.
 
+    drawWrappedApprox(window, detectiveMessage, 550, 235, 21, 27);
+    drawText(window, "Limit: 1 hint per room (-5 points).", 545, 425, 16, sf::Color(222, 199, 155));// Player ko hint ki limit aur penalty batate hain: har room mein 1 hint, aur 5 points minus.
     drawButton(window, { {{400,570},{260,60}}, hintsUsed[currentRoom] < 1 ? "GET 1 HINT (-5)" : "HINT USED" }, true);
     drawButton(window, { {{900,650},{220,50}}, "BACK" });
 }
 
+// Detective ki notebook display karne wala function.
 // Displays the detective's notebook
+// Notebook mein collected clues, code key aur player ke personal notes show hote hain.
 void drawNotebook(sf::RenderWindow& window) {
+    // Notebook ke background mein current room ki image lagate hain.
+
     drawImage(window, "room" + to_string(currentRoom + 1),
         0, 0, static_cast<float>(W), static_cast<float>(H));
 
     sf::RectangleShape shade({ static_cast<float>(W), static_cast<float>(H) });
     shade.setFillColor(sf::Color(0, 0, 0, 185));
     window.draw(shade);
-
+// text likhy ga
     drawText(window, "DETECTIVE'S NOTEBOOK",
         390, 35, 31, sf::Color(255, 203, 111));
+// Notebook ki artwork/background image draw karte hain.
 
     drawImage(window, "notebook_art", 105, 90, 990, 575);
 
     drawText(window, "COLLECTED CLUES",
         180, 165, 20, sf::Color(74, 45, 27));
 
-    float clueY = 210.f;
+    float clueY = 210.f;// Pehle clue ki vertical position set karte hain; har next clue is se neeche show hoga.
+// Loop tamam 4 rooms ke clues check karta hai.
+
     for (int i = 0; i < 4; ++i) {
-        string label = "Room " + to_string(i + 1) + ": ";
+        string label = "Room " + to_string(i + 1) + ": ";// Har line ke liye Room 1, Room 2 waghera ka label banate hain. Display numbering 1 se start hoti hai.
+
         string clue = clueCollected[i] ? collectedClues[i] : "Not discovered yet";
-        drawText(window, label + clue, 175, clueY, 15, sf::Color(61, 42, 27));
+        drawText(window, label + clue, 175, clueY, 15, sf::Color(61, 42, 27));// Room ka label aur uska clue notebook par draw karte hain.
+// Agla room ka clue 52 pixels neeche show karne ke liye Y position barhate hain.
+
         clueY += 52.f;
     }
 
     drawText(window, "Tip: Solve one puzzle in each room to gather clues.", 175, 422, 13, sf::Color(74, 45, 27));
 
     drawText(window, "CASE-FILE CODE KEY", 175, 442, 16, sf::Color(74, 45, 27));
-    drawText(window, "2-4-1-3 = Room 1 Bedroom", 175, 468, 14, sf::Color(61, 42, 27));
+    drawText(window, "2-4-1-3 = Room 1 Bedroom", 175, 468, 14, sf::Color(61, 42, 27));// Ye code Room  ko  map kartay hai.
+
     drawText(window, "3-1-4-2 = Room 2 Library", 175, 490, 14, sf::Color(61, 42, 27));
     drawText(window, "4-2-3-1 = Room 3 Living Room", 175, 512, 14, sf::Color(61, 42, 27));
     drawText(window, "1-3-2-4 = Room 4 Attic", 175, 534, 14, sf::Color(61, 42, 27));
@@ -717,23 +739,39 @@ void drawNotebook(sf::RenderWindow& window) {
     drawText(window, "MY NOTES", 650, 165, 20, sf::Color(74, 45, 27));
     drawText(window, "\n Space Bar: 1 word space \n\n Enter : move to next line", 670, 185, 12, sf::Color(74, 45, 27));
 
-    float y = 257.f;
-    string line = "";
-    unsigned chars = 0;
+    float y = 257.f;// Player ke notes ki starting vertical position set karte hain.
+// line string current line ke characters temporarily store karegi.
+   string line = "";
+    unsigned chars = 0;// chars counter current line mein characters ki tadaad track karta hai.
+
+// Range-based loop notebook string ke har character ko bari bari read karta hai.
 
     for (char c : notebook) {
+        // Newline milne ya 35 characters hone par current line complete samajh kar draw karte hain.
+
         if (c == '\n' || chars >= 35) {
+            // Current line ka text notebook par draw karte hain.
+
             drawText(window, line, 650, y, 16, sf::Color(42, 31, 24));
+            // Line draw hone ke baad string clear karte hain taake next line ka text collect ho.
+
             line.clear();
+            // Next line ko 27 pixels neeche shift karte hain.
+
             y += 27.f;
             chars = 0;
-            if (c == '\n') continue;
+            if (c == '\n') continue;// Agar Enter/newline mila tha to us character ko print nahi karte; seedha next character par chale jate hain.
+
         }
+// Current character ko line string ke end par add karte hain.
 
         line += c;
-        ++chars;
+        ++chars;// Character count mein 1 ka izafa karte hain.
+// Agar text notebook ke lower boundary se neeche chala jaye to loop rok dete hain.
+
         if (y > 555) break;
     }
+// Agar abhi text area mein jagah hai to last remaining line bhi draw karte hain.
 
     if (y <= 555)
         drawText(window, line, 650, y, 16, sf::Color(42, 31, 24));
